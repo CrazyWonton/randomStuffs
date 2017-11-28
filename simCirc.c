@@ -2,19 +2,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
+#include <stdint.h>
 
 
 //Evaluates each of the 5 basic circuits
-bool AND(bool i1, bool i2){return (i1&&i2);}
-bool OR(bool i1, bool i2){return (i1||i2);}
-bool INV(bool i1){return !i1;}
-bool GND(){return 0;}
-bool VDD(){return 1;}
+int AND(int i1, int i2){return (i1&&i2);}
+int OR(int i1, int i2){return (i1||i2);}
+int INV(int i1){return !i1;}
+int GND(){return 0;}
+int VDD(){return 1;}
 
 
 //Returns true if string is one of the five basic circuits
-bool isBasicCircuit(char *str){
+int isBasicCircuit(char *str){
 	return (
 		strcmp(str, "AND")==0 ||
 		strcmp(str, "OR")==0  ||
@@ -25,7 +25,7 @@ bool isBasicCircuit(char *str){
 
 //	matches the instance name to a basic logic gate and returns the corresponding output
 //	inputs can be set to nulll if they aren't being used to compute anything 
-bool doBasic(char *str, bool in0, bool in1) {
+int doBasic(char *str, int in0, int in1) {
 	if	(strcmp(str, "AND") == 0) {
 		return AND(in0, in1);
 	}
@@ -49,7 +49,7 @@ bool doBasic(char *str, bool in0, bool in1) {
 // current is the current net to get the values from
 //	inputVals are the user inputted values 
 //	outputVals are the current outputs of all the gate instances
-char getSource(struct net current, int i, int *inputVals, char *outVals) {
+char getSource(struct net current, int i, int *inputVals, int *outVals) {
 	if (current.source.instIndex == -1) 
 		return inputVals[current.source.pinIndex];
 	else 
@@ -61,13 +61,13 @@ char getSource(struct net current, int i, int *inputVals, char *outVals) {
 // inst is the index of the instance
 //	inputs is an array of inputs the gate will perform the logic on 
 //	outputs is the array of outputs for all gates in the circuit indexed by instance number
-void evaluateBasic(char *instName, int inst, bool inputs[], bool outputs[]) {
+void evaluateBasic(char *instName, int inst, int inputs[], int outputs[]) {
 	if (isBasicCircuit(instName)) {
 		outputs[inst] = doBasic(instName, inputs[0], inputs[1]);
 	}
 }
 
-// bool getSinkByName(char *name, struct circuit mainCirc) {
+// int getSinkByName(char *name, struct circuit mainCirc) {
 // 	int i = 0;
 // 	for (; i < mainCirc.numNets; i++) {
 // 		if (strcomp(name, mainCirc.nets[i].name) == 0 ) {
@@ -103,8 +103,11 @@ int main(int argc, char *argv[]){
 	}
 	
 			
-	bool outVals[100]; // hold the output of the gate instances
-	//memset(outVals, false, 8*sizeof(bool));
+	int outVals[100]; // hold the output of the gate instances
+	int w = 0;
+	for(;w<100;w++)
+		outVals[w]=0;
+	//memset(outVals, false, 8*sizeof(int));
 	// a = 0;
 	// for (; a < mainCirc.numInstances; a++) {
 	// 	outVals[a] = 0;
@@ -125,8 +128,8 @@ int main(int argc, char *argv[]){
 
 	 i = 0;
 	for (; i < mainCirc.numInstances; i++) {
-		bool inputs[100];	//inputs for the instance gate;
-		//memset(inputs, false, 8*sizeof(bool));
+		int inputs[100];	//inputs for the instance gate;
+		//memset(inputs, false, 8*sizeof(int));
 		// a = 0;
 		// for (; a < mainCirc.instances[i].numInputs; a++) {
 		// 	inputs[a] = 0;
@@ -144,6 +147,7 @@ int main(int argc, char *argv[]){
 		//evaluateBasic(mainCirc.instances[i].moduleName, i, inputs, *outVals);
 		if (isBasicCircuit(mainCirc.instances[i].moduleName)) {
 			outVals[i] = doBasic(mainCirc.instances[i].moduleName, inputs[0], inputs[1]);  //Going to have to get changed if using array of input method
+			printf("(%d,%d)\n",i,outVals[i]);
 		}
 	}
 
@@ -151,10 +155,11 @@ int main(int argc, char *argv[]){
 	i = 0;
 	for(; i<mainCirc.numOutputs; i++){
 		//If the last element, replace the space with a newline char
+		//printf("SPAH\n");
 		if(i==mainCirc.numOutputs - 1)
-			printf("%s=%c\n", mainCirc.outputs[i], outVals[i]);
+			printf("%s=%d\n", mainCirc.outputs[i], outVals[i]);
 		else
-			printf("%s=%c ", mainCirc.outputs[i], outVals[i]);
+			printf("%s=%d ", mainCirc.outputs[i], outVals[i]);
 	}
 	return 0;
 }
